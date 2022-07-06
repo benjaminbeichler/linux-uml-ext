@@ -44,6 +44,7 @@
 #include "ubd.h"
 #include <os.h>
 #include "cow.h"
+#include "timetravel.h"
 
 /* Max request size is determined by sector mask - 32K */
 #define UBD_MAX_REQUEST (8 * sizeof(long))
@@ -1136,6 +1137,17 @@ static int __init ubd_driver_init(void){
 		/* Letting ubd=sync be like using ubd#s= instead of ubd#= is
 		 * enough. So use anyway the io thread. */
 	}
+
+#ifdef CONFIG_UML_TIME_TRAVEL_SUPPORT
+	/* do not initialize asynchronous io-thread and corresponding irq
+	 * in inf-cpu or ext time travel, as we need synchronous io logic
+	 */
+
+	if (time_travel_mode == TT_MODE_INFCPU ||
+	    time_travel_mode == TT_MODE_EXTERNAL)
+		return 0;
+#endif
+
 	stack = alloc_stack(0, 0);
 	io_pid = start_io_thread(stack + PAGE_SIZE, &thread_fd);
 	if(io_pid < 0){
@@ -1320,8 +1332,11 @@ static struct io_thread_req *ubd_alloc_req(struct ubd *dev, struct request *req,
 	return io_req;
 }
 
+static void do_io(struct io_thread_req *req, struct io_desc *desc);
+
 static int ubd_submit_request(struct ubd *dev, struct request *req)
 {
+	int i;
 	int segs = 0;
 	struct io_thread_req *io_req;
 	int ret;
@@ -1341,6 +1356,24 @@ static int ubd_submit_request(struct ubd *dev, struct request *req)
 	io_req->desc_cnt = segs;
 	if (segs)
 		ubd_map_req(dev, io_req, req);
+
+#ifdef CONFIG_UML_TIME_TRAVEL_SUPPORT
+	//do the request sychronous (bypass io_thread and ubd_handler)
+	if (time_travel_mode == TT_MODE_INFCPU ||
+	    time_travel_mode == TT_MODE_EXTERNAL) {
+		for (i = 0; !io_req->error && i < io_req->desc_cnt; i++)
+			do_io(io_req, &io_req->io_desc[i]);
+
+		if (io_req->error == BLK_STS_NOTSUPP &&
+		    req_op(io_req->req) == REQ_OP_DISCARD) {
+			blk_queue_max_discard_sectors(io_req->req->q, 0);
+			blk_queue_max_write_zeroes_sectors(io_req->req->q, 0);
+		}
+		blk_mq_end_request(io_req->req, io_req->error);
+		kfree(io_req);
+		return 0;
+	}
+#endif
 
 	ret = os_write_file(thread_fd, &io_req, sizeof(io_req));
 	if (ret != sizeof(io_req)) {
