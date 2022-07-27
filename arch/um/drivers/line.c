@@ -260,9 +260,9 @@ int line_setup_irq(int fd, int input, int output, struct line *line, void *data)
 	int err;
 
 	if (input) {
-		err = um_request_irq(UM_IRQ_ALLOC, fd, IRQ_READ,
+		err = um_request_irq_tt(UM_IRQ_ALLOC, fd, IRQ_READ,
 				     line_interrupt, 0,
-				     driver->read_irq_name, data);
+				     driver->read_irq_name, data, simple_timetravel_handler);
 		if (err < 0)
 			return err;
 
@@ -270,9 +270,9 @@ int line_setup_irq(int fd, int input, int output, struct line *line, void *data)
 	}
 
 	if (output) {
-		err = um_request_irq(UM_IRQ_ALLOC, fd, IRQ_WRITE,
+		err = um_request_irq_tt(UM_IRQ_ALLOC, fd, IRQ_WRITE,
 				     line_write_interrupt, 0,
-				     driver->write_irq_name, data);
+				     driver->write_irq_name, data, simple_timetravel_handler);
 		if (err < 0)
 			return err;
 
