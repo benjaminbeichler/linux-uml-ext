@@ -94,7 +94,10 @@ static void time_travel_handle_message(struct um_timetravel_msg *msg,
 	case UM_TIMETRAVEL_ACK:
 		return;
 	case UM_TIMETRAVEL_RUN:
-		time_travel_set_time(msg->time);
+		// the caller time_travel_handle_message will do the appropriate time advance
+		// return here 0, if we got RUN, but are not in idle/ext_wait, to
+		// actually do anything with the run
+		resp.time = (mode != TTMH_READ) ? 1 : 0;
 		break;
 	case UM_TIMETRAVEL_FREE_UNTIL:
 		time_travel_ext_free_until_valid = true;
@@ -238,7 +241,7 @@ static void time_travel_ext_wait(bool idle)
 	 */
 	while (msg.op != UM_TIMETRAVEL_RUN)
 		time_travel_handle_message(&msg, idle ? TTMH_IDLE : TTMH_POLL);
-
+	time_travel_set_time(msg.time);
 	time_travel_ext_waiting--;
 
 	/* we might request more stuff while polling - reset when we run */
