@@ -3185,6 +3185,10 @@ struct hwsim_new_radio_params {
 static void hwsim_mcast_config_msg(struct sk_buff *mcast_skb,
 				   struct genl_info *info)
 {
+	if (hwsim_virtio_enabled) {
+		hwsim_tx_virtio(NULL, mcast_skb);
+		return;
+	}
 	if (info)
 		genl_notify(&hwsim_genl_family, mcast_skb, info,
 			    HWSIM_MCGRP_CONFIG, GFP_KERNEL);
@@ -5249,8 +5253,10 @@ static int hwsim_get_radio_nl(struct sk_buff *msg, struct genl_info *info)
 			nlmsg_free(skb);
 			goto out_err;
 		}
-
-		res = genlmsg_reply(skb, info);
+		if (hwsim_virtio_enabled) {
+			res = hwsim_tx_virtio(data, skb);
+		} else
+			res = genlmsg_reply(skb, info);
 		break;
 	}
 
@@ -5505,6 +5511,7 @@ static int hwsim_virtio_handle_cmd(struct sk_buff *skb)
 	struct genl_info info = {};
 	int err;
 
+	genl_info_net_set(&info,&init_net);
 	nlh = nlmsg_hdr(skb);
 	gnlh = nlmsg_data(nlh);
 
@@ -5526,6 +5533,19 @@ static int hwsim_virtio_handle_cmd(struct sk_buff *skb)
 		break;
 	case HWSIM_CMD_TX_INFO_FRAME:
 		hwsim_tx_info_frame_received_nl(skb, &info);
+		break;
+	case HWSIM_CMD_NEW_RADIO:
+		hwsim_new_radio_nl(skb,&info);
+		break;
+	case HWSIM_CMD_DEL_RADIO:
+		hwsim_del_radio_nl(skb,&info);
+		break;
+	case HWSIM_CMD_GET_RADIO:
+		if(nlh->nlmsg_flags & NLM_F_DUMP){
+			pr_err_ratelimited("hwsim: GET_RADIO with DUMP is not supported");
+			return -EPROTO;
+		} else 
+			hwsim_get_radio_nl(skb,&info);
 		break;
 	default:
 		pr_err_ratelimited("hwsim: invalid cmd: %d\n", gnlh->cmd);
