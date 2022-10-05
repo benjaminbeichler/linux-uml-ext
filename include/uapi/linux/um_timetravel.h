@@ -77,9 +77,9 @@ enum um_timetravel_ops {
 	/**
 	 * @UM_TIMETRAVEL_WAIT: Indicate waiting for the previously requested
 	 *	runtime, new requests may be made while waiting (e.g. due to
-	 *	interrupts); the time field is ignored. The calendar must process
-	 *	this message and later	send a %UM_TIMETRAVEL_RUN message when
-	 *	the host can run again.
+	 *	interrupts); the time field contains the next requested runtime
+	 *  for consistency checks. The calendar must process this message and
+	 *  later send a %UM_TIMETRAVEL_RUN message when the host can run again.
 	 *	(host -> calendar)
 	 */
 	UM_TIMETRAVEL_WAIT		= 3,
