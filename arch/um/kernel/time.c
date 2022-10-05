@@ -220,7 +220,7 @@ static bool time_travel_ext_request(unsigned long long time)
 	return true;
 }
 
-static void time_travel_ext_wait(bool idle)
+static void time_travel_ext_wait(bool idle, unsigned long long ns)
 {
 	struct um_timetravel_msg msg = {
 		.op = UM_TIMETRAVEL_ACK,
@@ -230,7 +230,7 @@ static void time_travel_ext_wait(bool idle)
 	time_travel_ext_free_until_valid = false;
 	time_travel_ext_waiting++;
 
-	time_travel_ext_req(UM_TIMETRAVEL_WAIT, -1);
+	time_travel_ext_req(UM_TIMETRAVEL_WAIT, ns);
 
 	/*
 	 * Here we are deep in the idle loop, so we have to break out of the
@@ -256,7 +256,7 @@ static void time_travel_ext_get_time(void)
 static void __time_travel_update_time(unsigned long long ns, bool idle)
 {
 	if (time_travel_mode == TT_MODE_EXTERNAL && time_travel_ext_request(ns))
-		time_travel_ext_wait(idle);
+		time_travel_ext_wait(idle, ns);
 	else
 		time_travel_set_time(ns);
 }
