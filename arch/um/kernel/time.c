@@ -708,6 +708,9 @@ static irqreturn_t um_timer(int irq, void *dev)
 
 static u64 timer_read(struct clocksource *cs)
 {
+	static unsigned long long last_timer_read = 0;
+	static int consecutive_calls_at_same_time = 0;
+
 	if (time_travel_mode != TT_MODE_OFF) {
 		/*
 		 * We make reading the timer cost a bit so that we don't get
@@ -721,8 +724,14 @@ static u64 timer_read(struct clocksource *cs)
 		 * "what do I do next" and onstack event we use to know when
 		 * to return from time_travel_update_time().
 		 */
+		if (last_timer_read != time_travel_time){
+			last_timer_read = time_travel_time;
+			consecutive_calls_at_same_time = 0;
+		} else {
+			consecutive_calls_at_same_time++;
+		}
 		if (!irqs_disabled() && !in_interrupt() && !in_softirq() &&
-		    !time_travel_ext_waiting)
+		    !time_travel_ext_waiting && consecutive_calls_at_same_time > 10)
 			time_travel_update_time(time_travel_time +
 						TIMER_MULTIPLIER,
 						false);
