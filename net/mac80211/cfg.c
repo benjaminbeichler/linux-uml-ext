@@ -2387,7 +2387,7 @@ static int copy_mesh_setup(struct ieee80211_if_mesh *ifmsh,
 }
 
 static int ieee80211_update_mesh_config(struct wiphy *wiphy,
-					struct net_device *dev, u32 mask,
+					struct net_device *dev, u64 mask,
 					const struct mesh_config *nconf)
 {
 	struct mesh_config *conf;

@@ -8076,10 +8076,10 @@ static const struct nla_policy
 
 static int nl80211_parse_mesh_config(struct genl_info *info,
 				     struct mesh_config *cfg,
-				     u32 *mask_out)
+				     u64 *mask_out)
 {
 	struct nlattr *tb[NL80211_MESHCONF_ATTR_MAX + 1];
-	u32 mask = 0;
+	u64 mask = 0;
 	u16 ht_opmode;
 
 #define FILL_IN_MESH_PARAM_IF_SET(tb, cfg, param, mask, attr, fn)	\
@@ -8095,9 +8095,9 @@ do {									\
 	if (nla_parse_nested_deprecated(tb, NL80211_MESHCONF_ATTR_MAX, info->attrs[NL80211_ATTR_MESH_CONFIG], nl80211_meshconf_params_policy, info->extack))
 		return -EINVAL;
 
-	/* This makes sure that there aren't more than 32 mesh config
+	/* This makes sure that there aren't more than 64 mesh config
 	 * parameters (otherwise our bitfield scheme would not work.) */
-	BUILD_BUG_ON(NL80211_MESHCONF_ATTR_MAX > 32);
+	BUILD_BUG_ON(NL80211_MESHCONF_ATTR_MAX > 64);
 
 	/* Fill in the params struct */
 	FILL_IN_MESH_PARAM_IF_SET(tb, cfg, dot11MeshRetryTimeout, mask,

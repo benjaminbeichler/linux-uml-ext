@@ -4367,7 +4367,7 @@ struct cfg80211_ops {
 				struct net_device *dev,
 				struct mesh_config *conf);
 	int	(*update_mesh_config)(struct wiphy *wiphy,
-				      struct net_device *dev, u32 mask,
+				      struct net_device *dev, u64 mask,
 				      const struct mesh_config *nconf);
 	int	(*join_mesh)(struct wiphy *wiphy, struct net_device *dev,
 			     const struct mesh_config *conf,
