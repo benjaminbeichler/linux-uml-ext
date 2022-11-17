@@ -69,7 +69,10 @@
 		       __field(u32, dot11MeshHWMPactivePathToRootTimeout)  \
 		       __field(u16, dot11MeshHWMProotInterval)		   \
 		       __field(u16, dot11MeshHWMPconfirmationInterval)	   \
-		       __field(bool, dot11MeshNolearn)
+		       __field(bool, dot11MeshNolearn)	\
+			   __field(u32, dot11MeshDelayedBeaconTxInterval)  \
+			   __field(u32, dot11MeshDelayedBeaconTxMaxDelay)	\
+			   __field(u32, dot11MeshDelayedBeaconTxMinDelay)
 #define MESH_CFG_ASSIGN							      \
 	do {								      \
 		__entry->dot11MeshRetryTimeout = conf->dot11MeshRetryTimeout; \
@@ -111,6 +114,12 @@
 		__entry->dot11MeshHWMPconfirmationInterval =		      \
 				conf->dot11MeshHWMPconfirmationInterval;      \
 		__entry->dot11MeshNolearn = conf->dot11MeshNolearn;	      \
+		__entry->dot11MeshDelayedBeaconTxInterval = 		\
+				conf->dot11MeshDelayedBeaconTxInterval;      \
+		__entry->dot11MeshDelayedBeaconTxMaxDelay = 		\
+				conf->dot11MeshDelayedBeaconTxMaxDelay;      \
+		__entry->dot11MeshDelayedBeaconTxMinDelay = 		\
+				conf->dot11MeshDelayedBeaconTxMinDelay;		\
 	} while (0)
 
 #define CHAN_ENTRY __field(enum nl80211_band, band) \
