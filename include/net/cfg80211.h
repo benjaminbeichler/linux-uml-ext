@@ -2213,6 +2213,17 @@ struct bss_parameters {
  *      not be the optimal decision as a multi-hop route might be better. So
  *      if using this setting you will likely also want to disable
  *      dot11MeshForwarding and use another mesh routing protocol on top.
+ * @dot11MeshDelayedBeaconTxInterval: interval of the delayed beacon 
+ *      transmission for the purpose of Mesh Beacon Collision Avoidance (MBCA)
+ *      The value is expressed in units of Beacon Interval. The value 0 
+ *      indicates that the delayed beacon transmission is disabled.
+ *      See 14.13.4.6 Delayed beacon transmissions
+ * @dot11MeshDelayedBeaconTxMaxDelay: maximum delay time in microseconds from a
+ *      TBTT of delayed beacon transmissions for the purpose of Mesh Beacon
+ *      Collision Avoidance (MBCA)
+ * @dot11MeshDelayedBeaconTxMinDelay: minimum delay time in microseconds from a
+ *      TBTT of delayed beacon transmissions for the purpose of Mesh Beacon
+ *      Collision Avoidance (MBCA)
  */
 struct mesh_config {
 	u16 dot11MeshRetryTimeout;
@@ -2246,6 +2257,9 @@ struct mesh_config {
 	u16 dot11MeshAwakeWindowDuration;
 	u32 plink_timeout;
 	bool dot11MeshNolearn;
+	u32 dot11MeshDelayedBeaconTxInterval;
+	u32 dot11MeshDelayedBeaconTxMaxDelay;
+	u32 dot11MeshDelayedBeaconTxMinDelay;
 };
 
 /**

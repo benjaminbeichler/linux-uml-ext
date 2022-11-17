@@ -7998,7 +7998,13 @@ static int nl80211_get_mesh_config(struct sk_buff *skb,
 	    nla_put_u8(msg, NL80211_MESHCONF_NOLEARN,
 		       cur_params.dot11MeshNolearn) ||
 	    nla_put_u8(msg, NL80211_MESHCONF_CONNECTED_TO_AS,
-		       cur_params.dot11MeshConnectedToAuthServer))
+		       cur_params.dot11MeshConnectedToAuthServer) ||
+		nla_put_u32(msg,NL80211_MESHCONF_DELAYED_BEACON_TX_INTERVAL,
+			cur_params.dot11MeshDelayedBeaconTxInterval) ||
+		nla_put_u32(msg,NL80211_MESHCONF_DELAYED_BEACON_TX_MAX_DELAY,
+			cur_params.dot11MeshDelayedBeaconTxMaxDelay) ||
+		nla_put_u32(msg,NL80211_MESHCONF_DELAYED_BEACON_TX_MIN_DELAY,
+			cur_params.dot11MeshDelayedBeaconTxMinDelay))
 		goto nla_put_failure;
 	nla_nest_end(msg, pinfoattr);
 	genlmsg_end(msg, hdr);
@@ -8058,6 +8064,9 @@ nl80211_meshconf_params_policy[NL80211_MESHCONF_ATTR_MAX+1] = {
 	[NL80211_MESHCONF_CONNECTED_TO_GATE] = NLA_POLICY_RANGE(NLA_U8, 0, 1),
 	[NL80211_MESHCONF_NOLEARN] = NLA_POLICY_RANGE(NLA_U8, 0, 1),
 	[NL80211_MESHCONF_CONNECTED_TO_AS] = NLA_POLICY_RANGE(NLA_U8, 0, 1),
+	[NL80211_MESHCONF_DELAYED_BEACON_TX_INTERVAL] = NLA_POLICY_RANGE(NLA_U32, 0, 255),
+	[NL80211_MESHCONF_DELAYED_BEACON_TX_MAX_DELAY] = { .type = NLA_U32 },
+	[NL80211_MESHCONF_DELAYED_BEACON_TX_MIN_DELAY] = { .type = NLA_U32 },
 };
 
 static const struct nla_policy
@@ -8283,7 +8292,7 @@ static int nl80211_update_mesh_config(struct sk_buff *skb,
 	struct net_device *dev = info->user_ptr[1];
 	struct wireless_dev *wdev = dev->ieee80211_ptr;
 	struct mesh_config cfg;
-	u32 mask;
+	u64 mask;
 	int err;
 
 	if (wdev->iftype != NL80211_IFTYPE_MESH_POINT)

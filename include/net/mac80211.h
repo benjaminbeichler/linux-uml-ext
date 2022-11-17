@@ -673,6 +673,8 @@ struct ieee80211_bss_conf {
 	bool enable_beacon;
 	u8 dtim_period;
 	u16 beacon_int;
+	u32 beacon_mesh_delay;
+	u16 beacon_mesh_delay_interval_count;
 	u16 assoc_capability;
 	u64 sync_tsf;
 	u32 sync_device_ts;

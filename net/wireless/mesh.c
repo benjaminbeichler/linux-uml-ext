@@ -54,6 +54,9 @@
 #define MESH_DEFAULT_DTIM_PERIOD	2
 #define MESH_DEFAULT_AWAKE_WINDOW	10	/* in 1024 us units (=TUs) */
 
+#define MESH_DELAYED_BEACON_MIN    0        /* in us, see 14.13.4.6 Delayed beacon transmissions*/
+#define MESH_DELAYED_BEACON_MAX	   2048     /* in us */
+
 const struct mesh_config default_mesh_config = {
 	.dot11MeshRetryTimeout = MESH_RET_T,
 	.dot11MeshConfirmTimeout = MESH_CONF_T,
@@ -83,6 +86,9 @@ const struct mesh_config default_mesh_config = {
 	.dot11MeshAwakeWindowDuration = MESH_DEFAULT_AWAKE_WINDOW,
 	.plink_timeout = MESH_DEFAULT_PLINK_TIMEOUT,
 	.dot11MeshNolearn = false,
+	.dot11MeshDelayedBeaconTxInterval = 0,
+	.dot11MeshDelayedBeaconTxMaxDelay = MESH_DELAYED_BEACON_MAX,
+	.dot11MeshDelayedBeaconTxMinDelay = MESH_DELAYED_BEACON_MIN,
 };
 
 const struct mesh_setup default_mesh_setup = {

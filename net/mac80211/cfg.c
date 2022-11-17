@@ -2502,6 +2502,16 @@ static int ieee80211_update_mesh_config(struct wiphy *wiphy,
 	if (_chg_mesh_attr(NL80211_MESHCONF_CONNECTED_TO_AS, mask))
 		conf->dot11MeshConnectedToAuthServer =
 			nconf->dot11MeshConnectedToAuthServer;
+	if (_chg_mesh_attr(NL80211_MESHCONF_DELAYED_BEACON_TX_INTERVAL, mask))
+		conf->dot11MeshDelayedBeaconTxInterval =
+			nconf->dot11MeshDelayedBeaconTxInterval;
+	if (_chg_mesh_attr(NL80211_MESHCONF_DELAYED_BEACON_TX_MAX_DELAY, mask))
+		conf->dot11MeshDelayedBeaconTxMaxDelay =
+			nconf->dot11MeshDelayedBeaconTxMaxDelay;
+	if (_chg_mesh_attr(NL80211_MESHCONF_DELAYED_BEACON_TX_MIN_DELAY, mask))
+		conf->dot11MeshDelayedBeaconTxMinDelay =
+			nconf->dot11MeshDelayedBeaconTxMinDelay;
+		
 	ieee80211_mbss_info_change_notify(sdata, BSS_CHANGED_BEACON);
 	return 0;
 }
