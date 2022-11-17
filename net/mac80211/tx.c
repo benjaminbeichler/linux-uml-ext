@@ -27,6 +27,7 @@
 #include <asm/unaligned.h>
 #include <net/fq_impl.h>
 #include <net/gso.h>
+#include <linux/random.h>
 
 #include "ieee80211_i.h"
 #include "driver-ops.h"
@@ -5478,6 +5479,23 @@ __ieee80211_beacon_get(struct ieee80211_hw *hw,
 		skb_put_data(skb, beacon->tail, beacon->tail_len);
 		ieee80211_beacon_get_finish(hw, vif, link, offs, beacon, skb,
 					    chanctx_conf, 0);
+		if (ifmsh->mshcfg.dot11MeshDelayedBeaconTxInterval > 0) {
+			if (vif->link_conf[link_id]->beacon_mesh_delay_interval_count
+			    	>= ifmsh->mshcfg.dot11MeshDelayedBeaconTxInterval) {
+				vif->link_conf[link_id]->beacon_mesh_delay =
+					ifmsh->mshcfg
+						.dot11MeshDelayedBeaconTxMinDelay +
+					get_random_u32_below(
+						ifmsh->mshcfg
+							.dot11MeshDelayedBeaconTxMaxDelay -
+						ifmsh->mshcfg
+							.dot11MeshDelayedBeaconTxMinDelay);
+			} else {
+				vif->link_conf[link_id]
+					->beacon_mesh_delay_interval_count++;
+				vif->link_conf[link_id]->beacon_mesh_delay = 0;
+			}
+		}
 	} else {
 		WARN_ON(1);
 		goto out;
