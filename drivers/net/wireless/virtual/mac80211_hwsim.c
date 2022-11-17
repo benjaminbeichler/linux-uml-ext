@@ -632,6 +632,7 @@ static struct platform_driver mac80211_hwsim_driver = {
 struct mac80211_hwsim_link_data {
 	u32 link_id;
 	u64 beacon_int	/* beacon interval in us */;
+	u32 beacon_delay;
 	struct hrtimer beacon_timer;
 };
 
@@ -2257,6 +2258,10 @@ static void mac80211_hwsim_beacon_tx(void *arg, u8 *mac,
 		}
 		ieee80211_beacon_free_ema_list(ema);
 	} else {
+		//prepare additional delay if needed by mesh delayed beacon configuration 
+		if(ieee80211_vif_is_mesh(vif))
+			link_data->beacon_delay = link_conf->beacon_mesh_delay;
+
 		skb = ieee80211_beacon_get(hw, vif, link_id);
 		if (!skb)
 			return;
@@ -2296,6 +2301,12 @@ mac80211_hwsim_beacon(struct hrtimer *timer)
 		bcn_int -= data->bcn_delta;
 		data->bcn_delta = 0;
 	}
+	
+	/* maybe add delay for mesh beacon collision avoidance
+	   only add the delay here in consecutive beacon timers
+	   to not delay first beacons after configuration changes */
+	bcn_int += link_data->beacon_delay;
+
 	hrtimer_forward_now(&link_data->beacon_timer,
 			    ns_to_ktime(bcn_int * NSEC_PER_USEC));
 	return HRTIMER_RESTART;
