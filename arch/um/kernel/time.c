@@ -22,6 +22,7 @@
 #include <linux/time-internal.h>
 #include <linux/um_timetravel.h>
 #include <shared/init.h>
+#include <asm/syscall-generic.h>
 
 #ifdef CONFIG_UML_TIME_TRAVEL_SUPPORT
 enum time_travel_mode time_travel_mode;
@@ -721,6 +722,27 @@ static irqreturn_t um_timer(int irq, void *dev)
 	return IRQ_HANDLED;
 }
 
+static const int suspicious_busy_loop_syscalls[] = {
+	36, //sys_getitimer
+	96, //sys_gettimeofday
+	201, //sys_time
+	224, //sys_timer_gettime
+	228, //sys_clock_gettime
+	287, //sys_timerfd_gettime
+};
+
+static bool suspicious_busy_loop(void)
+{
+	int i;
+	int syscall = syscall_get_nr(current, task_pt_regs(current));
+
+	for (i = 0; i < ARRAY_SIZE(suspicious_busy_loop_syscalls); i++) {
+		if (suspicious_busy_loop_syscalls[i] == syscall)
+			return true;
+	}
+	return false;
+};
+
 static u64 timer_read(struct clocksource *cs)
 {
 	static unsigned long long last_timer_read;
@@ -742,11 +764,12 @@ static u64 timer_read(struct clocksource *cs)
 		if (last_timer_read != time_travel_time) {
 			last_timer_read = time_travel_time;
 			consecutive_calls_at_same_time = 0;
-		} else {
+		} else if (suspicious_busy_loop()) {
 			consecutive_calls_at_same_time++;
 		}
 		if (!irqs_disabled() && !in_interrupt() && !in_softirq() &&
-		    !time_travel_ext_waiting && consecutive_calls_at_same_time > 10)
+		    !time_travel_ext_waiting && consecutive_calls_at_same_time > 10 &&
+		    suspicious_busy_loop())
 			time_travel_update_time(time_travel_time +
 						TIMER_MULTIPLIER,
 						false);
