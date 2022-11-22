@@ -86,7 +86,7 @@ const struct mesh_config default_mesh_config = {
 	.dot11MeshAwakeWindowDuration = MESH_DEFAULT_AWAKE_WINDOW,
 	.plink_timeout = MESH_DEFAULT_PLINK_TIMEOUT,
 	.dot11MeshNolearn = false,
-	.dot11MeshDelayedBeaconTxInterval = 0,
+	.dot11MeshDelayedBeaconTxInterval = 10,
 	.dot11MeshDelayedBeaconTxMaxDelay = MESH_DELAYED_BEACON_MAX,
 	.dot11MeshDelayedBeaconTxMinDelay = MESH_DELAYED_BEACON_MIN,
 };
