@@ -29,6 +29,7 @@
 #include <kern_util.h>
 #include <mem_user.h>
 #include <os.h>
+#include <timetravel.h>
 
 #include "um_arch.h"
 
@@ -283,7 +284,8 @@ static void parse_host_cpu_flags(char *line)
 {
 	int i;
 	for (i = 0; i < 32*NCAPINTS; i++) {
-		if ((x86_cap_flags[i] != NULL) && strstr(line, x86_cap_flags[i]))
+		if ((x86_cap_flags[i] != NULL) && strstr(line, x86_cap_flags[i]) && 
+			!(time_travel_mode != TT_MODE_OFF && strstr("tsc",x86_cap_flags[i])))
 			set_cpu_cap(&boot_cpu_data, i);
 	}
 }
