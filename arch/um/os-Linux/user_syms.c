@@ -77,7 +77,8 @@ EXPORT_SYMBOL_PROTO(futimes);
 EXPORT_SYMBOL_PROTO(chmod);
 EXPORT_SYMBOL_PROTO(fchmod);
 EXPORT_SYMBOL_PROTO(rename);
-EXPORT_SYMBOL_PROTO(__xmknod);
+extern void __xmknod(void) __attribute__((weak));
+EXPORT_SYMBOL(__xmknod);
 
 EXPORT_SYMBOL_PROTO(symlink);
 EXPORT_SYMBOL_PROTO(link);
