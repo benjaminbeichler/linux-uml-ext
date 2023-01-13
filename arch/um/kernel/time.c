@@ -447,6 +447,7 @@ void time_travel_add_irq_event(struct time_travel_event *e)
 	BUG_ON(time_travel_mode != TT_MODE_EXTERNAL);
 
 	time_travel_ext_get_time();
+	time_travel_ext_prev_request_valid = false;
 	/*
 	 * We could model interrupt latency here, for now just
 	 * don't have any latency at all and request the exact
