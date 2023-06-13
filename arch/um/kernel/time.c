@@ -42,6 +42,7 @@ static bool time_travel_ext_prev_request_valid;
 static unsigned long long time_travel_ext_prev_request;
 static bool time_travel_ext_free_until_valid;
 static unsigned long long time_travel_ext_free_until;
+static struct time_travel_event *time_travel_first_event(void);
 
 static void time_travel_set_time(unsigned long long ns)
 {
@@ -67,6 +68,7 @@ static void time_travel_handle_message(struct um_timetravel_msg *msg,
 		.op = UM_TIMETRAVEL_ACK,
 	};
 	int ret;
+	struct time_travel_event *event;
 
 	/*
 	 * We can't unlock here, but interrupt signals with a timetravel_handler
@@ -103,6 +105,10 @@ static void time_travel_handle_message(struct um_timetravel_msg *msg,
 	case UM_TIMETRAVEL_FREE_UNTIL:
 		time_travel_ext_free_until_valid = true;
 		time_travel_ext_free_until = msg->time;
+		break;
+	case UM_TIMETRAVEL_REQUEST:
+		event = time_travel_first_event();
+		resp.time = event->time;
 		break;
 	}
 
