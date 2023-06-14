@@ -289,6 +289,7 @@ static void __time_travel_add_event(struct time_travel_event *e,
 	e->time = time;
 
 	local_irq_save(flags);
+	block_signals_hard();
 	list_for_each_entry(tmp, &time_travel_events, list) {
 		/*
 		 * Add the new entry before one with higher time,
@@ -311,6 +312,7 @@ static void __time_travel_add_event(struct time_travel_event *e,
 	tmp = time_travel_first_event();
 	time_travel_ext_update_request(tmp->time);
 	time_travel_next_event = tmp->time;
+	unblock_signals_hard();
 	local_irq_restore(flags);
 }
 
@@ -350,6 +352,7 @@ void deliver_time_travel_irqs(void)
 		return;
 
 	local_irq_save(flags);
+	block_signals_hard();
 	irq_enter();
 	while ((e = list_first_entry_or_null(&time_travel_irqs,
 					     struct time_travel_event,
@@ -359,6 +362,7 @@ void deliver_time_travel_irqs(void)
 		e->fn(e);
 	}
 	irq_exit();
+	unblock_signals_hard();
 	local_irq_restore(flags);
 }
 
@@ -371,7 +375,9 @@ static void time_travel_deliver_event(struct time_travel_event *e)
 		 */
 		e->fn(e);
 	} else if (irqs_disabled()) {
+		block_signals_hard();
 		list_add_tail(&e->list, &time_travel_irqs);
+		unblock_signals_hard();
 		/*
 		 * set pending again, it was set to false when the
 		 * event was deleted from the original list, but
@@ -396,8 +402,10 @@ bool time_travel_del_event(struct time_travel_event *e)
 	if (!e->pending)
 		return false;
 	local_irq_save(flags);
+	block_signals_hard();
 	list_del(&e->list);
 	e->pending = false;
+	unblock_signals_hard();
 	local_irq_restore(flags);
 	return true;
 }
