@@ -1958,14 +1958,16 @@ static void mac80211_hwsim_stop(struct ieee80211_hw *hw)
 {
 	struct mac80211_hwsim_data *data = hw->priv;
 	int i;
+	unsigned long flags;
 
 	data->started = false;
-
 	for (i = 0; i < ARRAY_SIZE(data->link_data); i++)
 		hrtimer_cancel(&data->link_data[i].beacon_timer);
 
+	spin_lock_irqsave(&data->pending.lock, flags);
 	while (!skb_queue_empty(&data->pending))
 		ieee80211_free_txskb(hw, skb_dequeue(&data->pending));
+	spin_unlock_irqrestore(&data->pending.lock, flags);
 
 	wiphy_dbg(hw->wiphy, "%s\n", __func__);
 }
